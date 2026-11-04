@@ -1,0 +1,308 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>地球物理學作業 8-2：重力修正與重力異常計算</title>
+    <!-- MathJax for rendering LaTeX formulas -->
+    <script src="https://polyfill.io/v3/polyfill.min.js?features=es6"></script>
+    <script id="MathJax-script" async src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+    <style>
+        :root {
+            --primary-color: #2c3e50;
+            --secondary-color: #3498db;
+            --accent-color: #e74c3c;
+            --bg-color: #f8f9fa;
+            --card-bg: #ffffff;
+            --text-color: #333333;
+            --border-color: #e9ecef;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, "Noto Sans TC", sans-serif;
+            line-height: 1.7;
+            background-color: var(--bg-color);
+            color: var(--text-color);
+            margin: 0;
+            padding: 0;
+        }
+
+        header {
+            background: linear-gradient(135deg, var(--primary-color), var(--secondary-color));
+            color: white;
+            padding: 2.5rem 1rem;
+            text-align: center;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+        }
+
+        header h1 {
+            margin: 0 0 0.5rem 0;
+            font-size: 2rem;
+        }
+
+        header p {
+            margin: 0;
+            opacity: 0.9;
+        }
+
+        .container {
+            max-width: 900px;
+            margin: 2rem auto;
+            padding: 0 1rem;
+        }
+
+        .card {
+            background: var(--card-bg);
+            border-radius: 10px;
+            padding: 1.8rem;
+            margin-bottom: 2rem;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+            border: 1px solid var(--border-color);
+        }
+
+        h2 {
+            color: var(--primary-color);
+            border-bottom: 2px solid var(--secondary-color);
+            padding-bottom: 0.5rem;
+            margin-top: 0;
+        }
+
+        h3 {
+            color: var(--secondary-color);
+            margin-top: 1.5rem;
+        }
+
+        .data-box {
+            background-color: #eef7fc;
+            border-left: 4px solid var(--secondary-color);
+            padding: 1rem 1.2rem;
+            margin: 1rem 0;
+            border-radius: 0 6px 6px 0;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 1rem 0;
+        }
+
+        th, td {
+            padding: 0.75rem;
+            text-align: left;
+            border-bottom: 1px solid var(--border-color);
+        }
+
+        th {
+            background-color: #f1f3f5;
+            color: var(--primary-color);
+        }
+
+        .calc-form {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+            gap: 1rem;
+            margin-bottom: 1.5rem;
+        }
+
+        .form-group {
+            display: flex;
+            flex-direction: column;
+        }
+
+        .form-group label {
+            font-weight: 600;
+            margin-bottom: 0.3rem;
+            font-size: 0.9rem;
+        }
+
+        .form-group input, .form-group select {
+            padding: 0.6rem;
+            border: 1px solid #ced4da;
+            border-radius: 6px;
+            font-size: 1rem;
+        }
+
+        button.btn-calc {
+            background-color: var(--secondary-color);
+            color: white;
+            border: none;
+            padding: 0.75rem 1.5rem;
+            font-size: 1rem;
+            font-weight: bold;
+            border-radius: 6px;
+            cursor: pointer;
+            transition: background-color 0.2s;
+            grid-column: 1 / -1;
+        }
+
+        button.btn-calc:hover {
+            background-color: #2980b9;
+        }
+
+        .result-box {
+            background-color: #f8f9fa;
+            border: 1px solid #dee2e6;
+            border-radius: 6px;
+            padding: 1rem;
+            margin-top: 1rem;
+        }
+
+        footer {
+            text-align: center;
+            padding: 2rem;
+            color: #6c757d;
+            font-size: 0.9rem;
+            border-top: 1px solid var(--border-color);
+        }
+    </style>
+</head>
+<body>
+
+    <header>
+        <h1>地球物理學作業 8-2 計算與原理說明</h1>
+        <p>重力測站校正：理論重力、自由空氣修正、布格修正與重力異常</p>
+    </header>
+
+    <div class="container">
+
+        <!-- 題目內容 -->
+        <section class="card">
+            <h2>一、 題目內容 (Problem Statement)</h2>
+            <p>已知某一重力測站之觀測資料如下：</p>
+            <div class="data-box">
+                <ul>
+                    <li><strong>緯度 (Latitude):</strong> 48.1195° N</li>
+                    <li><strong>經度 (Longitude):</strong> 12.1878° E</li>
+                    <li><strong>高程 (Elevation):</strong> 487.9 m</li>
+                    <li><strong>觀測重力值 (Observed Gravity, \(g_{obs}\)):</strong> 980,717.39 mGal</li>
+                </ul>
+            </div>
+            <p><strong>(a) 請計算：</strong></p>
+            <ol>
+                <li>理論重力值 (Theoretical Gravity, \(g_{th}\))</li>
+                <li>自由空氣修正量 (Free Air Correction, \(FAC\))</li>
+                <li>布格修正量 (Bouguer Correction, \(BC\))</li>
+                <li>自由空氣重力異常 (Free Air Gravity Anomaly, \(\Delta g_{FA}\))</li>
+                <li>布格重力異常 (Bouguer Gravity Anomaly, \(\Delta g_{B}\))</li>
+            </ol>
+            <p><strong>(b) 假設該測站位於海洋表面：</strong></p>
+            <p>若緯度、經度與觀測重力值保持不變，但測站位於海水表面，水深為 487.9 m。請重新計算其自由空氣重力異常與布格重力異常。</p>
+        </section>
+
+        <!-- 原理說明 -->
+        <section class="card">
+            <h2>二、 物理與地球物理原理說明 (Principles & Formulas)</h2>
+
+            <h3>1. 理論重力 (Theoretical Gravity, \(g_{th}\))</h3>
+            <p>地球非完美球體，而是自轉導致的扁橢球體。重力隨著緯度變化（赤道小、兩極大）。國際標準重力公式（如 1967 年國際重力公式 IGF 1967 或 1980 年 WGS-84 公式）用來計算特定緯度 \(\phi\) 在參考橢球面上之標準重力值：</p>
+            $$\text{IGF 1967: } g_{th}(\phi) = 978031.846 \left(1 + 0.005278895 \sin^2\phi + 0.000023462 \sin^4\phi\right) \text{ mGal}$$
+            $$\text{WGS-84 (1980): } g_{th}(\phi) = 978032.7 \left(1 + 0.0053024 \sin^2\phi - 0.0000058 \sin^2 2\phi\right) \text{ mGal}$$
+
+            <h3>2. 自由空氣修正 (Free-Air Correction, \(FAC\))</h3>
+            <p>測站高程離地心越遠，重力隨距離二次方反比衰減。自由空氣修正將測站高度下降至參考橢球面（海平面），但不考慮測站與海平面之間的物質質量：</p>
+            $$FAC = -\frac{\partial g}{\partial z} h \approx +0.3086 \times h \text{ (mGal, 其中 } h \text{ 單位為公尺)}$$
+
+            <h3>3. 布格修正 (Bouguer Correction, \(BC\))</h3>
+            <p>陸地上測站與海平面之間存在岩石板塊，其引力會增加觀測重力值。布格修正假設該層岩石為無限大平行板塊（Bouguer slab），將此質量效應扣除：</p>
+            $$BC = 2\pi G \rho h \approx 0.04193 \times \rho \times h \text{ mGal}$$
+            <p>一般大陸地殼平均密度取 \(\rho = 2.67 \text{ g/cm}^3\)，故 \(BC \approx 0.1119 \times h \text{ mGal}\)。</p>
+
+            <h3>4. 重力異常 (Gravity Anomalies)</h3>
+            <ul>
+                <li><strong>自由空氣重力異常 (\(\Delta g_{FA}\)):</strong> \(\Delta g_{FA} = g_{obs} - g_{th} + FAC\)</li>
+                <li><strong>陸地布格重力異常 (\(\Delta g_{B}\)):</strong> \(\Delta g_{B} = \Delta g_{FA} - BC = g_{obs} - g_{th} + FAC - BC\)</li>
+                <li><strong>海洋布格重力異常:</strong> 在海洋表面測量時，高程 \(h = 0\)，故 \(FAC = 0\)。但海水密度（\(\rho_w \approx 1.03 \text{ g/cm}^3\)）小於地殼岩石密度（\(\rho_c = 2.67 \text{ g/cm}^3\)），產生密度缺失。海洋布格修正需補回水層與標準地殼間的質量差：
+                $$BC_{ocean} = 2\pi G (\rho_c - \rho_w) d_w \approx 0.04193 \times (\rho_c - \rho_w) \times d_w \text{ mGal}$$
+                $$\Delta g_{B, ocean} = \Delta g_{FA} + BC_{ocean}$$
+                </li>
+            </ul>
+        </section>
+
+        <!-- 詳細計算步驟與答案 -->
+        <section class="card">
+            <h2>三、 詳細計算過程與標準答案 (Calculations & Answers)</h2>
+
+            <h3>(a) 陸地測站計算</h3>
+            <table>
+                <thead>
+                    <tr>
+                        <th>項目</th>
+                        <th>公式 / 計算過程</th>
+                        <th>結果 (IGF 1967)</th>
+                        <th>結果 (WGS84)</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td><strong>i) 理論重力 \(g_{th}\)</strong></td>
+                        <td>帶入 \(\phi = 48.1195^\circ\) N</td>
+                        <td><strong>980,900.90 mGal</strong></td>
+                        <td>980,901.85 mGal</td>
+                    </tr>
+                    <tr>
+                        <td><strong>ii) 自由空氣修正 \(FAC\)</strong></td>
+                        <td>\(+0.3086 \times 487.9\)</td>
+                        <td colspan="2"><strong>+150.57 mGal</strong></td>
+                    </tr>
+                    <tr>
+                        <td><strong>iii) 布格修正 \(BC\)</strong></td>
+                        <td>\(0.04193 \times 2.67 \times 487.9\)</td>
+                        <td colspan="2"><strong>+54.62 mGal</strong></td>
+                    </tr>
+                    <tr>
+                        <td><strong>iv) 自由空氣重力異常 \(\Delta g_{FA}\)</strong></td>
+                        <td>\(980717.39 - g_{th} + 150.57\)</td>
+                        <td><strong>-32.94 mGal</strong></td>
+                        <td>-33.89 mGal</td>
+                    </tr>
+                    <tr>
+                        <td><strong>v) 布格重力異常 \(\Delta g_{B}\)</strong></td>
+                        <td>\(\Delta g_{FA} - BC = -32.94 - 54.62\)</td>
+                        <td><strong>-87.56 mGal</strong></td>
+                        <td>-88.51 mGal</td>
+                    </tr>
+                </tbody>
+            </table>
+
+            <h3>(b) 海洋表面測站計算 (水深 \(d_w = 487.9\text{ m}\))</h3>
+            <p>當測站位於海平面（\(h = 0\text{ m}\)），\(FAC = 0\text{ mGal}\)。海水密度取 \(\rho_w = 1.03 \text{ g/cm}^3\)，地殼密度取 \(\rho_c = 2.67 \text{ g/cm}^3\)。</p>
+            <table>
+                <thead>
+                    <tr>
+                        <th>項目</th>
+                        <th>公式 / 計算過程</th>
+                        <th>結果 (IGF 1967)</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td><strong>自由空氣重力異常 \(\Delta g_{FA}\)</strong></td>
+                        <td>\(g_{obs} - g_{th} + 0 = 980717.39 - 980900.90\)</td>
+                        <td><strong>-183.51 mGal</strong></td>
+                    </tr>
+                    <tr>
+                        <td><strong>海洋布格修正量 \(BC_{ocean}\)</strong></td>
+                        <td>\(0.04193 \times (2.67 - 1.03) \times 487.9\)</td>
+                        <td><strong>+33.55 mGal</strong></td>
+                    </tr>
+                    <tr>
+                        <td><strong>布格重力異常 \(\Delta g_{B}\)</strong></td>
+                        <td>\(\Delta g_{FA} + BC_{ocean} = -183.51 + 33.55\)</td>
+                        <td><strong>-149.96 mGal</strong></td>
+                    </tr>
+                </tbody>
+            </table>
+        </section>
+
+        <!-- 動態計算器 -->
+        <section class="card">
+            <h2>四、 動態重力異常計算器 (Interactive Calculator)</h2>
+            <p>你可以自訂參數進行測試：</p>
+            <div class="calc-form">
+                <div class="form-group">
+                    <label for="lat">緯度 (° N):</label>
+                    <input type="number" id="lat" value="48.1195" step="0.0001">
+                </div>
+                <div class="form-group">
+                    <label for="elev">高程/深度 (m):</label>
+                    <input type="number" id="elev"
