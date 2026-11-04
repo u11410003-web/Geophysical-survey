@@ -8,7 +8,7 @@
     <script src="https://polyfill.io/v3/polyfill.min.js?features=es6"></script>
     <script id="MathJax-script" async src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
     <style>
-        /* CSS 歸一化與盒模型重置 */
+        /* 全局邊框盒模式歸一化 */
         *, *::before, *::after {
             box-sizing: border-box;
             margin: 0;
@@ -78,6 +78,66 @@
             margin-bottom: 0.5rem;
         }
 
+        /* 題目圖片與影片容器樣式 */
+        .media-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 1.5rem;
+            margin: 1.5rem 0;
+        }
+
+        .media-item {
+            background: #ffffff;
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+            overflow: hidden;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.03);
+            display: flex;
+            flex-direction: column;
+        }
+
+        .media-title {
+            background-color: #f1f3f5;
+            padding: 0.6rem 1rem;
+            font-weight: 600;
+            font-size: 0.95rem;
+            color: var(--primary-color);
+            border-bottom: 1px solid var(--border-color);
+        }
+
+        .img-container {
+            padding: 0.8rem;
+            text-align: center;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            flex-grow: 1;
+        }
+
+        .img-container img {
+            max-width: 100%;
+            height: auto;
+            border-radius: 4px;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+        }
+
+        .video-container {
+            position: relative;
+            padding-bottom: 56.25%; /* 16:9 比例 */
+            height: 0;
+            overflow: hidden;
+            width: 100%;
+        }
+
+        .video-container iframe {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            border: 0;
+        }
+
         .data-box {
             background-color: #eef7fc;
             border-left: 4px solid var(--secondary-color);
@@ -107,7 +167,7 @@
             color: var(--primary-color);
         }
 
-        /* 修復後的計算器表單排版 */
+        /* 計算器表單排版 */
         .calc-form {
             display: grid;
             grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
@@ -201,6 +261,23 @@
         <!-- 題目內容 -->
         <section class="card">
             <h2>一、 題目內容 (Problem Statement)</h2>
+
+            <!-- 媒體區塊：題目圖片與參考影片 -->
+            <div class="media-grid">
+                <div class="media-item">
+                    <div class="media-title">📷 原始題目截圖</div>
+                    <div class="img-container">
+                        <img src="problem.jpg" alt="作業 8-2 題目圖片" onerror="this.onerror=null; this.src='https://via.placeholder.com/600x250?text=Problem+Image+Placeholder';">
+                    </div>
+                </div>
+                <div class="media-item">
+                    <div class="media-title">🎬 參考講解影片</div>
+                    <div class="video-container">
+                        <iframe src="https://www.youtube.com/embed/7NDCHYK0kRQ" title="YouTube video player" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" allowfullscreen></iframe>
+                    </div>
+                </div>
+            </div>
+
             <p>已知某一重力測站之觀測資料如下：</p>
             <div class="data-box">
                 <ul>
